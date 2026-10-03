@@ -1,0 +1,18 @@
+{
+    "name": "sola-api",
+    "private": true,
+    "version": "0.0.1",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch --env-file=.env src/index.ts"
+    },
+    "dependencies": {
+        "@apollo/server": "^5.5.1",
+        "graphql": "^16.14.2"
+    },
+    "devDependencies": {
+        "@types/node": "^26.6.4",
+        "tsx": "^4.23.15",
+        "typescript": "^7.0.2"
+    }
+}
