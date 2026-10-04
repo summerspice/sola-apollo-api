@@ -27,6 +27,13 @@ type Product {
     swatch: String
     colorGroup: ColorGroup
     colorSiblings: [Product!]!
+    variants: [Variant!]!
+}
+
+type Variant {
+    id: ID!
+    title: String!
+    availableForSale: Boolean!
 }
 
 type Query {
@@ -86,6 +93,17 @@ const SIBLINGS_QUERY = `#graphql
     }
 `
 
+const VARIANTS_QUERY = `#graphql
+    query ProductVariants($handle: String!) {
+        product(handle: $handle) {
+            variants(first: 50) {
+                nodes { id title availableForSale }
+            }
+        }
+    }
+`
+
+
 // ----Mapping: Shopify shape -> our shape -------
 function toProduct(p: ShopifyProduct) {
     const styleTag = p.tags.find((t) => t.startsWith('style:'))
@@ -132,6 +150,18 @@ const resolvers = {
                 query: `tag:"style:${parent.styleCode}"`,
             })
             return data.products.nodes.map(toProduct)
+        },
+        variants: async (parent: Product) => {
+            const data = await storefront<{
+                product: { variants: { nodes: { id: string; title: string; availableForSale: boolean }[] } } | null
+            }>(VARIANTS_QUERY, { handle: parent.handle })
+
+            return (data.product?.variants.nodes ?? []).map((v) => ({
+                // "gid://shopify/ProductVariant/67609830260789" → "67609830260789"
+                id: v.id.split('/').pop(),
+                title: v.title,
+                availableForSale: v.availableForSale,
+            }))
         },
     },
 }
